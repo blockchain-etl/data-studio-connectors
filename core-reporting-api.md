@@ -149,29 +149,26 @@ The sections listed below are taken directly from the Google Analytics [Dimensio
 - Events / Session with Event `ga:eventsPerSessionWithEvent`
 
 # Application Specific Sections
-## Goal Conversions
-TODO
-## Content Grouping
-TODO
-## Ecommerce
-TODO
+Goal Conversions
+Content Grouping
+Ecommerce
 
 # Inapplicable Sections
-## Adwords
-## Platform or Device
-## System
-## Internal Search
-## Social Interactions
-## User Timings
-## Content Experiments
-## Custom Variables or Columns
-## DoubleClick Campaign Manager
-## Adsense
-## Publisher
-## Ad Exchange
-## DoubleClick for Publishers Backfill
-## DoubleClick for Publishers
-## Lifetime Value and Cohorts
-## Channel Grouping
-## DoubleClick Bid Manager
-## DoubleClick Search
+Adwords
+Platform or Device
+System
+Internal Search
+Social Interactions
+User Timings
+Content Experiments
+Custom Variables or Columns
+DoubleClick Campaign Manager
+Adsense
+Publisher
+Ad Exchange
+DoubleClick for Publishers Backfill
+DoubleClick for Publishers
+Lifetime Value and Cohorts
+Channel Grouping
+DoubleClick Bid Manager
+DoubleClick Search
