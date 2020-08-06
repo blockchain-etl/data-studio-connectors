@@ -17,6 +17,12 @@ WITH s0 AS (
   FROM s0
   GROUP BY d
 )
+,sums AS (
+  SELECT d,
+  SUM(pages) AS hits
+  FROM s0
+  GROUP BY d
+)
 ,bounces AS (
   SELECT 
     d, 
@@ -33,20 +39,95 @@ WITH s0 AS (
   WHERE pages > 1
   GROUP BY d
 )
+
 SELECT 
-  sessions.d AS date,
-  sessions.sessions + bounces.sessions AS sessions,
-  bounces.sessions AS bounces,
-  bounces.sessions / (bounces.sessions + sessions.sessions) AS bounce_rate,
-  averages.avg_session_pages,
-  averages.avg_session_duration
+  sessions.d AS date
+  ,STRUCT(
+    "TODO" as userType,
+    "TODO" AS sessionCount,
+    "TODO" AS daysSinceLastSession,
+    "TODO" AS users,
+    "TODO" AS newUsers,
+    -- METRICS
+    "TODO" AS percentNewSessions,
+    "TODO" AS `1dayUsers`,
+    "TODO" AS `7dayUsers`,
+    "TODO" AS `14dayUsers`,
+    "TODO" AS `28dayUsers`,
+    "TODO" AS `30dayUsers`,
+    "TODO" AS sessionsPerUser
+  ) AS user
+  ,STRUCT(
+    "TODO" AS sessionDurationBucket,
+    -- METRICS
+    sessions.sessions + bounces.sessions AS sessions,
+    bounces.sessions AS bounces,
+    bounces.sessions / (bounces.sessions + sessions.sessions) AS bounceRate,
+    "TODO" AS sessionDuration,
+    averages.avg_session_duration as avgSessionDuration,
+    "TODO" AS uniqueDimensionCombinations,
+    sums.hits
+  ) AS session
+  ,STRUCT(
+    "TODO" as todo
+  ) AS traffic_sources
+  ,STRUCT(
+    "TODO" as todo
+  ) AS geo_network
+  ,STRUCT(
+    "TODO" as todo
+  ) AS audience
+  ,STRUCT(
+    "TODO" as todo
+  ) AS site_speed
+  ,STRUCT(
+    "TODO" as todo
+  ) AS exceptions
+  ,STRUCT(
+    "TODO" as todo
+  ) AS time
+  ,STRUCT(
+    "TODO" as todo
+  ) AS app_tracking
+  ,STRUCT(
+    "TODO" as pageTitle,
+    "TODO" as landingPageDepth,
+    "TODO" as secondPageDepth,
+    "TODO" as exitPagePath,
+    "TODO" as previousPagePath,
+    "TODO" as pageDepth,
+    -- METRICS
+    "TODO" as pageValue,
+    "TODO" as entrances,
+    "TODO" as entranceRate,
+    "TODO" as pageviews,
+    "TODO" as pageviewsPerSession,
+    "TODO" as uniquePageviews,
+    "TODO" as timeOnPage,
+    "TODO" as avgTimeOnPage,
+    "TODO" as exits,
+    "TODO" as exitRate
+  ) AS page_tracking
+  ,STRUCT(
+    "TODO" as eventCategory,
+    "TODO" as eventAction,
+    "TODO" as eventLabel,
+    -- METRICS
+    "TODO" as totalEvents,
+    "TODO" as uniqueEvents,
+    "TODO" as eventValue,
+    "TODO" as avgEventValue,
+    "TODO" as sessionsWithEvent,
+    "TODO" as eventsPerSessionWithEvent
+  ) AS event_tracking
 FROM
   sessions,
   bounces,
-  averages
+  averages,
+  sums
 WHERE TRUE
   AND sessions.d = bounces.d 
   AND sessions.d = averages.d
-  AND sessions.d >= PARSE_DATE("%Y%m%d", @DS_START_DATE)
-  AND sessions.d <= PARSE_DATE("%Y%m%d", @DS_END_DATE)
+  AND sessions.d = sums.d
 ORDER BY date
+LIMIT 1000
