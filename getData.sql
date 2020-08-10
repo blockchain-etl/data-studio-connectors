@@ -2,6 +2,7 @@ WITH s0 AS (
   SELECT 
     session_id, 
     COUNT(*) AS pages, 
+    MIN(block_timestamp) AS session_timestamp,
     CAST(MIN(block_timestamp) AS DATE) AS d, 
     MIN(block_timestamp) AS start_time, 
     MAX(block_timestamp) AS end_time, 
@@ -140,25 +141,25 @@ SELECT
     "TODO" as fatalExceptionsPerScreenview  
   ) AS exceptions
   ,STRUCT(
-    "TODO" as date,
-    "TODO" as year,
-    "TODO" as month,
-    "TODO" as week,
-    "TODO" as day,
-    "TODO" as hour,
-    "TODO" as minute,
+    CAST(s0.session_timestamp AS DATE) as date,
+    EXTRACT(YEAR FROM session_timestamp) as year,
+    EXTRACT(MONTH FROM session_timestamp) as month,
+    EXTRACT(WEEK FROM session_timestamp) as week,
+    EXTRACT(DAY FROM session_timestamp) as day,
+    EXTRACT(HOUR FROM session_timestamp) as hour,
+    EXTRACT(MINUTE FROM session_timestamp) as minute,
     "TODO" as nthMonth,
     "TODO" as nthWeek,
     "TODO" as nthDay,
     "TODO" as nthMinute,
-    "TODO" as dayOfWeek,
+    EXTRACT(DAYOFWEEK FROM session_timestamp) as dayOfWeek,
     "TODO" as dayOfWeekName,
     "TODO" as dateHour,
     "TODO" as dateHourMinute,
     "TODO" as yearMonth,
     "TODO" as yearWeek,
-    "TODO" as isoWeek,
-    "TODO" as isoYear,
+    EXTRACT(ISOWEEK FROM session_timestamp) as isoWeek,
+    EXTRACT(ISOYEAR FROM session_timestamp) as isoYear,
     "TODO" as isoYearIsoWeek,
     "TODO" as nthHour    
   ) AS time
@@ -210,13 +211,15 @@ SELECT
     "TODO" as eventsPerSessionWithEvent
   ) AS event_tracking
 FROM
+  s0,
   sessions,
   bounces,
   averages,
   sums
 WHERE TRUE
-  AND sessions.d = bounces.d 
-  AND sessions.d = averages.d
-  AND sessions.d = sums.d
+  AND s0.d = sessions.d
+  AND s0.d = bounces.d 
+  AND s0.d = averages.d
+  AND s0.d = sums.d
 ORDER BY date
 LIMIT 1000
