@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "libraries": []
+  },
+  "dataStudio": {
+    "name": "crypto-analytics",
+    "logoUrl": "logoUrl",
+    "company": "manifestCompany",
+    "companyUrl": "companyUrl",
+    "addonUrl": "addonUrl",
+    "supportUrl": "supportUrl",
+    "description": "Crypto Analytics Connector",
+    "sources": [""],
+    "useQueryConfig": true
+  },
+  "oauthScopes": ["https://www.googleapis.com/auth/bigquery.readonly"]
+}
