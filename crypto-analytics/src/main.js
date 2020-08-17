@@ -1,4 +1,4 @@
-var cc = DataStudioApp.createCommunityConnector();
+const cc = DataStudioApp.createCommunityConnector();
 
 // https://developers.google.com/datastudio/connector/reference#isadminuser
 function isAdminUser() {
@@ -6,19 +6,19 @@ function isAdminUser() {
   return true;
 }
 
-var MARKETPLACE_ADDRESS = "0x698ff47b84837d3971118a369c570172ee7e54c2";
-var OGN_ADDRESS = "0x903dc47aa7c40f9f59ef1e5c167ce1a9b39a2bff";
+const MARKETPLACE_ADDRESS = "0x698ff47b84837d3971118a369c570172ee7e54c2";
+const OGN_ADDRESS = "0x903dc47aa7c40f9f59ef1e5c167ce1a9b39a2bff";
 
-var DEFAULT_CONTRACT_ADDRESS = MARKETPLACE_ADDRESS;
+const DEFAULT_CONTRACT_ADDRESS = MARKETPLACE_ADDRESS;
 
 // TODO: figure out how to programmatically get the user's project ID.
-var DEFAULT_PROJECT_ID = "origin-214503";
+const DEFAULT_PROJECT_ID = "origin-214503";
 
-var bqTypes = DataStudioApp.createCommunityConnector().BigQueryParameterType;
+const bqTypes = DataStudioApp.createCommunityConnector().BigQueryParameterType;
 
 // https://developers.google.com/datastudio/connector/reference#getconfig
 function getConfig(request) {
-  var config = cc.getConfig();
+  const config = cc.getConfig();
 
   config
     .newInfo()
@@ -47,8 +47,8 @@ function getConfig(request) {
 }
 
 function getFields() {
-  var fields = cc.getFields();
-  var types = cc.FieldType;
+  const fields = cc.getFields();
+  const types = cc.FieldType;
 
   fields
     .newDimension()
@@ -69,49 +69,47 @@ function getFields() {
 
 // https://developers.google.com/datastudio/connector/reference#getschema
 function getSchema(request) {
- // return { schema: getFields().build() };
-  var fields = getFields();
-  return cc.newGetSchemaResponse()
+  const fields = getFields();
+  return cc
+    .newGetSchemaResponse()
     .setFields(fields)
     .build();
 }
 
 // https://developers.google.com/datastudio/connector/reference#getdata
-//var sqlString = "SELECT COUNT(*) AS count FROM origin-214503.marketplace.listings;"
-
-var sqlString = "" +
-  "WITH wanted AS ( " +
-  "SELECT " +
-  "  session_id, " +
-  "  ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY block_timestamp) AS pos, " +
-  "  CASE WHEN tx.to_address = @contractAddress THEN TRUE ELSE NULL END AS ok, " +
-  "  tx.to_address " +
-  "FROM crypto-public-data.aux.materialized_sessions AS sessions JOIN UNNEST(transactions) AS tx " +
-  "WHERE TRUE " +
-  "), " +
-  "raw_referrers AS ( " +
-  "SELECT " +
-  "  wanted.session_id, wanted.ok, wanted.pos, " +
-  "  CASE WHEN wanted.pos-1 > 0 THEN transactions[ORDINAL(wanted.pos-1)].to_address ELSE NULL END AS referrer " +
-  "FROM " +
-  "crypto-public-data.aux.materialized_sessions AS sessions, wanted " +
-  "WHERE TRUE " +
-  "  AND wanted.ok IS TRUE " +
-  "  AND sessions.session_id = wanted.session_id " +
-  "), " +
-  "referrers AS ( " +
-  "SELECT DISTINCT session_id, FIRST_VALUE(referrer) OVER(PARTITION BY session_id ORDER BY pos) AS referrer " +
-  "FROM raw_referrers " +
-  "WHERE referrer IS NULL OR (referrer != @contractAddress) " +
-  "ORDER BY session_id " +
-  ") " +
-  "SELECT referrer, COUNT(*) AS freq " +
-  "FROM referrers " +
-  "GROUP BY referrer " +
-  "ORDER BY freq DESC;";
+const sqlString = `
+  WITH wanted AS (
+  SELECT
+    session_id,
+    ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY block_timestamp) AS pos,
+    CASE WHEN tx.to_address = @contractAddress THEN TRUE ELSE NULL END AS ok,
+    tx.to_address
+  FROM \`crypto-public-data.aux.materialized_sessions\` AS sessions JOIN UNNEST(transactions) AS tx
+  WHERE TRUE
+  ),
+  raw_referrers AS (
+  SELECT
+    wanted.session_id, wanted.ok, wanted.pos,
+    CASE WHEN wanted.pos-1 > 0 THEN transactions[ORDINAL(wanted.pos-1)].to_address ELSE NULL END AS referrer
+  FROM
+  \`crypto-public-data.aux.materialized_sessions\` AS sessions, wanted
+  WHERE TRUE
+    AND wanted.ok IS TRUE
+    AND sessions.session_id = wanted.session_id
+  ),
+  referrers AS (
+  SELECT DISTINCT session_id, FIRST_VALUE(referrer) OVER(PARTITION BY session_id ORDER BY pos) AS referrer
+  FROM raw_referrers
+  WHERE referrer IS NULL OR (referrer != @contractAddress)
+  ORDER BY session_id
+  )
+  SELECT referrer, COUNT(*) AS freq
+  FROM referrers
+  GROUP BY referrer
+  ORDER BY freq DESC`;
 
 function getData(request) {
-  var contractAddress = request.configParams.contractAddress;
+  const contractAddress = request.configParams.contractAddress;
   if (!contractAddress) {
     cc.newUserError()
       .setDebugText("No contract address provided")
@@ -119,9 +117,11 @@ function getData(request) {
       .throwException();
   }
 
+  console.log(`REQUEST=${JSON.stringify(request)}`);
+  let response;
   try {
-    var authToken = ScriptApp.getOAuthToken();
-    return cc
+    const authToken = ScriptApp.getOAuthToken();
+    response = cc
       .newBigQueryConfig()
       .setAccessToken(authToken)
       .setUseStandardSql(true)
@@ -135,4 +135,6 @@ function getData(request) {
       .setText("Error fetching data from API.")
       .throwException();
   }
+  console.log(`RESPONSE=${JSON.stringify(response)}`);
+  return response;
 }

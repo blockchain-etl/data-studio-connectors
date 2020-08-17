@@ -13,5 +13,6 @@
     "sources": [""],
     "useQueryConfig": true
   },
+  "runtimeVersion": "V8",
   "oauthScopes": ["https://www.googleapis.com/auth/bigquery.readonly"]
 }
