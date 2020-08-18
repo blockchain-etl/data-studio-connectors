@@ -17,5 +17,10 @@
     "@google/clasp": "^2.1.0",
     "@google/dscc-scripts": "^1.0.17",
     "prettier": "^1.16.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:blockchain-etl/data-studio-connectors.git"
+  },
+  "private": true
 }
