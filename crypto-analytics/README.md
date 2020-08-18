@@ -7,7 +7,7 @@ brew install node
 ### Deploying
 ```
 npm install
-npm push
+npm run push
 ```
 
 ### Running the connector
