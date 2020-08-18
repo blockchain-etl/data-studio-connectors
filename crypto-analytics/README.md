@@ -12,5 +12,5 @@ npm push
 
 ### Running the connector
 ```
-npm try_latest
+npm run try_latest
 ```
