@@ -7,6 +7,7 @@ brew install node
 ### Deploying
 ```
 npm install
+./node_modules/.bin/clasp login
 npm run push
 ```
 
