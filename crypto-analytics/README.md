@@ -18,9 +18,15 @@ Clasp is now installed. Run it, and follow the browser-based Oauth to authentica
 ```
 ./node_modules/.bin/clasp login
 ```
+
 Clone your project, using the script ID you extracted earlier (see above). This creates the file `.clasp.json`
 ```
 ./node_modules/.bin/clasp clone 1BMTO81eIdQ9-xOLdB_68p3DcYcMBgKDSCcUml1H4wwLQYSS2URU-_5bn
+```
+
+Initialize local dev environment with `npx dscc-gen`. [Data Studio > Community Connectors > Local development](refer to https://developers.google.com/datastudio/connector/local-development for more details).
+```
+npx @google/dscc-gen connector --script_id "1BMTO81eIdQ9-xOLdB_68p3DcYcMBgKDSCcUml1H4wwLQYSS2URU-_5bn"
 ```
 
 ### Deploy and run the connector
