@@ -1,7 +1,7 @@
 {
   "dsccConnector": {
-    "production": "AKfycbwmRzADgVeOJXUJ13BW2-Zq_eI1N4VGqEkivz_DRzUwS_n0OJ_uej4LA2ZP_PBFPlct",
-    "latest": "AKfycbxGFq8G9qn1b4NP_nEDLkdGDOcfhFbMZJg7HCDRlR0"
+    "production": "<FILL THIS IN>",
+    "latest": "<FILL THIS IN>"
   },
   "scripts": {
     "prettier": "prettier --write \"src/**/*.js\"",
