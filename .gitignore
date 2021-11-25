@@ -1,0 +1,5 @@
+crypto-analytics/package.json
+crypto-analytics/.clasp.json
+crypto-analytics/node_modules/
+crypto-analytics/package-lock.json
+tmp
