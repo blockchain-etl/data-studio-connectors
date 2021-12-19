@@ -3,13 +3,13 @@
     "libraries": []
   },
   "dataStudio": {
-    "name": "crypto-analytics",
-    "logoUrl": "logoUrl",
-    "company": "manifestCompany",
+    "name": "Ethereum Analytics",
+    "logoUrl": "http://34.102.134.49/ethereum_logo.png",
+    "company": "blockchain-etl",
     "companyUrl": "companyUrl",
     "addonUrl": "addonUrl",
     "supportUrl": "supportUrl",
-    "description": "Crypto Analytics Connector",
+    "description": "Analyze user sessions on your Ethereum Smart Contract.",
     "sources": [""],
     "useQueryConfig": true
   },
