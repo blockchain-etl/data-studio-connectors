@@ -11,7 +11,10 @@
     "supportUrl": "supportUrl",
     "description": "Analyze user sessions on your Ethereum Smart Contract.",
     "sources": [""],
-    "useQueryConfig": true
+    "useQueryConfig": true,
+    "templates": {
+      "default": "1223f019-4826-46f1-b356-f7d83a1edeb8"
+    }
   },
   "runtimeVersion": "V8",
   "oauthScopes": ["https://www.googleapis.com/auth/bigquery.readonly"]
