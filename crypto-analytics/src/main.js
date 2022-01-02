@@ -6,10 +6,7 @@ function isAdminUser() {
   return true;
 }
 
-const MARKETPLACE_ADDRESS = "0x698ff47b84837d3971118a369c570172ee7e54c2";
-const OGN_ADDRESS = "0x903dc47aa7c40f9f59ef1e5c167ce1a9b39a2bff";
-
-const DEFAULT_CONTRACT_ADDRESS = MARKETPLACE_ADDRESS;
+const DEFAULT_CONTRACT_ADDRESS = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
 
 // TODO: figure out how to programmatically get the user's project ID.
 const DEFAULT_PROJECT_ID = "origin-214503";
@@ -41,7 +38,7 @@ function getConfig(request) {
 
   // This forces a date range object to be provided for `getData()` requests.
   // https://developers.google.com/apps-script/reference/data-studio/config#setDateRangeRequired(Boolean)
-  // config.setDateRangeRequired(true);
+  config.setDateRangeRequired(true);
 
   return config.build();
 }
@@ -51,18 +48,125 @@ function getFields() {
   const types = cc.FieldType;
 
   fields
-    .newDimension()
-    .setId("referrer")
-    .setName("referrer")
-    .setDescription("Eth address the call came from")
+    .newMetric()
+    .setId("session_id")
+    .setName("session_id")
+    .setDescription("")
     .setType(types.TEXT);
 
   fields
     .newMetric()
-    .setId("freq")
-    .setName("freq")
-    .setDescription("Number of occurences")
+    .setId("session_start_block_timestamp")
+    .setName("session_start_block_timestamp")
+    .setDescription("")
+    .setType(types.YEAR_MONTH_DAY_SECOND)
+    .setGroup('DATETIME');
+
+  fields
+    .newMetric()
+    .setId("session_start_block_number")
+    .setName("session_start_block_number")
+    .setDescription("")
     .setType(types.NUMBER);
+
+  fields
+    .newMetric()
+    .setId("session_end_block_timestamp")
+    .setName("session_end_block_timestamp")
+    .setDescription("")
+    .setType(types.YEAR_MONTH_DAY_SECOND);
+
+  fields
+    .newMetric()
+    .setId("session_end_block_number")
+    .setName("session_end_block_number")
+    .setDescription("")
+    .setType(types.NUMBER);
+
+  fields
+    .newMetric()
+    .setId("session_wallet_address")
+    .setName("session_wallet_address")
+    .setDescription("")
+    .setType(types.TEXT);
+
+  fields
+    .newMetric()
+    .setId("session_contract_address")
+    .setName("session_contract_address")
+    .setDescription("")
+    .setType(types.TEXT);
+
+  fields
+    .newMetric()
+    .setId("session_events_cnt")
+    .setName("session_events_cnt")
+    .setDescription("")
+    .setType(types.NUMBER);
+
+  fields
+    .newMetric()
+    .setId("session_duration_minutes")
+    .setName("session_duration_minutes")
+    .setDescription("")
+    .setType(types.NUMBER);
+
+  fields
+    .newMetric()
+    .setId("session_duration_blocks")
+    .setName("session_duration_blocks")
+    .setDescription("")
+    .setType(types.NUMBER);
+
+  fields
+    .newMetric()
+    .setId("first_session_start_block_timestamp")
+    .setName("first_session_start_block_timestamp")
+    .setDescription("")
+    .setType(types.YEAR_MONTH_DAY_SECOND);
+
+   fields
+    .newMetric()
+    .setId("first_session_start_block_number")
+    .setName("first_session_start_block_number")
+    .setDescription("")
+    .setType(types.TEXT);
+
+  fields
+    .newMetric()
+    .setId("next_session_start_block_timestamp")
+    .setName("next_session_start_block_timestamp")
+    .setDescription("")
+    .setType(types.YEAR_MONTH_DAY_SECOND);
+
+  fields
+    .newMetric()
+    .setId("next_session_start_block_number")
+    .setName("next_session_start_block_number")
+    .setDescription("")
+    .setType(types.NUMBER);
+
+  fields
+    .newMetric()
+    .setId("prev_session_start_block_timestamp")
+    .setName("prev_session_start_block_timestamp")
+    .setDescription("")
+    .setType(types.YEAR_MONTH_DAY_SECOND);
+
+  fields
+    .newMetric()
+    .setId("prev_session_start_block_number")
+    .setName("prev_session_start_block_number")
+    .setDescription("")
+    .setType(types.NUMBER);
+
+  fields
+    .newDimension()
+    .setId("is_new_user")
+    .setName("is_new_user")
+    .setDescription("")
+    .setType(types.BOOLEAN);
+
 
   return fields;
 }
@@ -78,37 +182,188 @@ function getSchema(request) {
 
 // https://developers.google.com/datastudio/connector/reference#getdata
 const sqlString = `
-  WITH wanted AS (
-  SELECT
-    session_id,
-    ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY block_timestamp) AS pos,
-    CASE WHEN tx.to_address = @contractAddress THEN TRUE ELSE NULL END AS ok,
-    tx.to_address
-  FROM \`crypto-public-data.aux.materialized_sessions\` AS sessions JOIN UNNEST(transactions) AS tx
-  WHERE TRUE
+  WITH first_sessions AS (
+    SELECT * FROM (
+      SELECT
+        wallet_address       AS wallet_address,
+        contract_address     AS contract_address,
+
+        FIRST_VALUE(id) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS id,
+
+        FIRST_VALUE(start_trace_id) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS start_trace_id,
+
+        FIRST_VALUE(start_block_number) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS start_block_number,
+
+        FIRST_VALUE(start_block_timestamp) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS start_block_timestamp,
+
+        ROW_NUMBER() OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS rn
+      FROM
+          bigquery-public-data.crypto_ethereum.sessions AS sessions
+      WHERE
+          contract_address = @contractAddress
+    )
+    WHERE
+      rn = 1
   ),
-  raw_referrers AS (
-  SELECT
-    wanted.session_id, wanted.ok, wanted.pos,
-    CASE WHEN wanted.pos-1 > 0 THEN transactions[ORDINAL(wanted.pos-1)].to_address ELSE NULL END AS referrer
-  FROM
-  \`crypto-public-data.aux.materialized_sessions\` AS sessions, wanted
-  WHERE TRUE
-    AND wanted.ok IS TRUE
-    AND sessions.session_id = wanted.session_id
+  sessions AS (
+    SELECT
+      id                     AS id,
+      start_trace_id         AS start_trace_id,
+      start_block_number     AS start_block_number,
+      start_block_timestamp  AS start_block_timestamp,
+      wallet_address         AS wallet_address,
+      contract_address       AS contract_address,
+
+      LEAD(start_block_timestamp) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS next_session_start_block_timestamp,
+
+      LEAD(start_block_number) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS next_session_start_block_number,
+
+      LAG(start_block_timestamp) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS prev_session_start_block_timestamp,
+
+      LAG(start_block_number) OVER (
+          PARTITION BY wallet_address, contract_address
+          ORDER BY start_block_timestamp ASC
+        )
+                             AS prev_session_start_block_number
+    FROM
+      bigquery-public-data.crypto_ethereum.sessions AS sessions
+    WHERE
+      contract_address = @contractAddress
+      AND DATE(start_block_timestamp) >= @startDate
+      AND DATE(start_block_timestamp) <= @endDate
   ),
-  referrers AS (
-  SELECT DISTINCT session_id, FIRST_VALUE(referrer) OVER(PARTITION BY session_id ORDER BY pos) AS referrer
-  FROM raw_referrers
-  WHERE referrer IS NULL OR (referrer != @contractAddress)
-  ORDER BY session_id
+  root_call_traces AS (
+    SELECT
+      trace_id         AS trace_id,
+      from_address     AS wallet_address,
+      to_address       AS contract_address,
+      transaction_hash AS transaction_hash,
+      block_timestamp  AS block_timestamp,
+      block_hash       AS block_hash,
+      block_number     AS block_number,
+      value            AS value,
+      gas              AS gas,
+      gas_used         AS gas_used,
+      trace_type       AS trace_type,
+      call_type        AS call_type,
+      error            AS error,
+      status           AS status
+    FROM
+      bigquery-public-data.crypto_ethereum.traces AS traces
+    WHERE
+      -- TODO:  We haven't filtered errors. Might want a metric for these.
+      trace_address IS NULL
+      AND trace_type = 'call'
+      AND to_address = @contractAddress
+      AND DATE(block_timestamp) >= @startDate
+      -- Includes traces from the following day so sessions beginning at the end of the date range have all events.
+      AND DATE_SUB(DATE(block_timestamp), INTERVAL 1 DAY) <= @endDate
+    ORDER BY
+      wallet_address,
+      block_timestamp ASC
   )
-  SELECT referrer, COUNT(*) AS freq
-  FROM referrers
-  GROUP BY referrer
-  ORDER BY freq DESC`;
+  SELECT
+    sessions.id                                                      AS session_id,
+    FORMAT_DATETIME("%Y%m%d%H%M%S", sessions.start_block_timestamp)  AS session_start_block_timestamp,
+    sessions.start_block_number                                      AS session_start_block_number,
+    FORMAT_DATETIME("%Y%m%d%H%M%S", MAX(traces.block_timestamp))     AS session_end_block_timestamp,
+    MAX(traces.block_number)                                         AS session_end_block_number,
+    sessions.wallet_address                                          AS session_wallet_address,
+    sessions.contract_address                                        AS session_contract_address,
+    COUNT(*)                                                         AS session_events_cnt,
+
+    DATETIME_DIFF(MAX(traces.block_timestamp), MIN(traces.block_timestamp), MINUTE)
+                                                                     AS session_duration_minutes,
+
+    MAX(traces.block_number) - MIN(traces.block_number)              AS session_duration_blocks,
+
+    FORMAT_DATETIME("%Y%m%d%H%M%S", first_sessions.start_block_timestamp)
+                                                                     AS first_session_start_block_timestamp,
+
+    first_sessions.start_block_number                                AS first_session_start_block_number,
+
+    FORMAT_DATETIME("%Y%m%d%H%M%S", sessions.next_session_start_block_timestamp)
+                                                                     AS next_session_start_block_timestamp,
+
+    sessions.next_session_start_block_number                         AS next_session_start_block_number,
+
+    FORMAT_DATETIME("%Y%m%d%H%M%S", sessions.prev_session_start_block_timestamp)
+                                                                     AS prev_session_start_block_timestamp,
+
+    sessions.prev_session_start_block_number                         AS prev_session_start_block_number,
+
+    CASE
+      WHEN sessions.id = first_sessions.id THEN TRUE
+      ELSE FALSE
+    END
+                                                                     AS is_new_user
+  FROM
+    sessions
+  LEFT JOIN
+    root_call_traces AS traces
+  ON
+    traces.wallet_address = sessions.wallet_address
+    AND traces.contract_address = sessions.contract_address
+    AND traces.block_timestamp >= sessions.start_block_timestamp
+    AND (
+      traces.block_timestamp < sessions.next_session_start_block_timestamp
+      OR sessions.next_session_start_block_timestamp IS NULL
+    )
+  LEFT JOIN
+    first_sessions
+  ON
+    sessions.wallet_address = first_sessions.wallet_address
+    AND sessions.contract_address = first_sessions.contract_address
+  GROUP BY
+    session_id,
+    session_start_block_timestamp,
+    session_start_block_number,
+    session_wallet_address,
+    session_contract_address,
+    first_session_start_block_timestamp,
+    first_session_start_block_number,
+    next_session_start_block_timestamp,
+    next_session_start_block_number,
+    prev_session_start_block_timestamp,
+    prev_session_start_block_number,
+    is_new_user;
+`;
 
 function getData(request) {
+  const startDate = request.dateRange.startDate;
+  const endDate = request.dateRange.endDate;
   const contractAddress = request.configParams.contractAddress;
   if (!contractAddress) {
     cc.newUserError()
@@ -128,6 +383,8 @@ function getData(request) {
       .setBillingProjectId(request.configParams.projectId)
       .setQuery(sqlString)
       .addQueryParameter("contractAddress", bqTypes.STRING, contractAddress)
+      .addQueryParameter('startDate', bqTypes.STRING, startDate)
+      .addQueryParameter('endDate', bqTypes.STRING, endDate)
       .build();
   } catch (e) {
     cc.newUserError()

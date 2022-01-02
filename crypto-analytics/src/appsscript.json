@@ -3,15 +3,17 @@
     "libraries": []
   },
   "dataStudio": {
-    "name": "crypto-analytics",
-    "logoUrl": "logoUrl",
-    "company": "manifestCompany",
-    "companyUrl": "companyUrl",
-    "addonUrl": "addonUrl",
-    "supportUrl": "supportUrl",
-    "description": "Crypto Analytics Connector",
-    "sources": [""],
-    "useQueryConfig": true
+    "name": "Ethereum Analytics",
+    "logoUrl": "http://34.102.134.49/ethereum_logo.png",
+    "company": "Gotham Gadget",
+    "companyUrl": "http://gothamgadget.com/google-data-studio/",
+    "addonUrl": "http://gothamgadget.com/google-data-studio/",
+    "supportUrl": "http://gothamgadget.com/google-data-studio/",
+    "description": "Analyze user sessions on your Ethereum Smart Contract.",
+    "useQueryConfig": true,
+    "templates": {
+      "default": "1223f019-4826-46f1-b356-f7d83a1edeb8"
+    }
   },
   "runtimeVersion": "V8",
   "oauthScopes": ["https://www.googleapis.com/auth/bigquery.readonly"]
