@@ -10,10 +10,16 @@
     "addonUrl": "https://gothamgadget.com/google-data-studio/",
     "supportUrl": "https://gothamgadget.com/google-data-studio/",
     "description": "Analyze user sessions on your Ethereum Smart Contract.",
-    "useQueryConfig": true,
+    "shortDescription": "Analyze user sessions on your Ethereum Smart Contract.",
+    "privacyPolicyUrl": "https://gothamgadget.com/privacy",
+    "termsOfServiceUrl": "https://gothamgadget.com/terms",
+    "authType": ["NONE"],
+    "feeType": ["FREE"],
+    "sources": ["ETHEREUM"],
     "templates": {
       "default": "1223f019-4826-46f1-b356-f7d83a1edeb8"
-    }
+    },
+    "useQueryConfig": true
   },
   "runtimeVersion": "V8",
   "oauthScopes": ["https://www.googleapis.com/auth/bigquery.readonly"]
