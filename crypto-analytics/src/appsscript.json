@@ -19,6 +19,7 @@
     "templates": {
       "default": "1223f019-4826-46f1-b356-f7d83a1edeb8"
     },
+    "forceViewersCredentials": true,
     "useQueryConfig": true
   },
   "runtimeVersion": "V8",
